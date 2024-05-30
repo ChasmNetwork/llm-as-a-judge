@@ -22,3 +22,5 @@ python main.py
 ```
 
 The CLI will ask the question and response of LLM A and LLM B, and then will run the benchmark using MODELS as jury.
+
+![demo](demo.png)
