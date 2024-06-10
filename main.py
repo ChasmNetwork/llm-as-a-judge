@@ -1,22 +1,22 @@
-from dotenv import load_dotenv
-
 from prompt import juryPrompt
-load_dotenv()
 
-from openai import OpenAI
-import os
-
-llm = OpenAI()
-models = os.getenv("MODELS").split(",")
-
-print("------------------")
-print(f"Available models: {models}")
-print("------------------")
-
-def run_jury(model, question, answerA, answerB):
+def run_jury(llm, model: str, question: str, answer_a: str, answer_b: str):
+    """
+    Runs the jury simulation using the given language model (llm) and model name.
+    
+    Args:
+        llm (LanguageModel): The language model used for generating responses.
+        model (str): The name of the model to use for generating responses.
+        question (str): The question to ask the jury.
+        answer_a (str): The first answer option for the jury.
+        answer_b (str): The second answer option for the jury.
+    
+    Returns:
+        str: The result of the jury simulation. Possible values are 'A', 'B', or 'Tie'.
+    """
     result = llm.chat.completions.create(
         model=model,
-        messages=juryPrompt(question, answerA, answerB)
+        messages=juryPrompt(question, answer_a, answer_b)
     )
     content = result.choices[0].message.content
     print("--------")
@@ -29,49 +29,3 @@ def run_jury(model, question, answerA, answerB):
         return "B"
     elif ("[[C]]" in content):
         return "Tie"
-
-def get_multiline_input(prompt):
-    print(prompt)
-    lines = []
-    while True:
-        line = input()
-        if line == "":
-            break
-        lines.append(line)
-    return "\n".join(lines)
-
-def main():
-    print("Question")
-    question = input()
-    print("--------")
-    print("Model A:")
-    input_model_a = get_multiline_input("Enter Model A input (end with an empty line):")
-    print("--------")
-    print("Model B:")
-    input_model_b = get_multiline_input("Enter Model B input (end with an empty line):")
-    print("--------")
-
-    results = []
-    for model in models:
-        result = run_jury(model, question, input_model_a, input_model_b)
-        print(f"Model {model} wins: {result}")
-        results.append(result)
-
-    counts = {
-        "A": results.count("A"),
-        "B": results.count("B"),
-        "Tie": results.count("Tie")
-    }
-
-    overall_winner = max(counts, key=counts.get)
-    if counts["A"] == counts["B"]:
-        overall_winner = "Tie"
-
-    print("--------")
-    print(f"Overall result: {overall_winner}")
-    print("--------")
-
-
-
-if __name__ == '__main__':
-    main()
