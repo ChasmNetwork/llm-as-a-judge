@@ -1,8 +1,20 @@
-from prompt import juryPrompt
+from prompt import direct_assessment_prompt, pairwise_prompt 
 
-def run_jury(llm, model: str, question: str, answer_a: str, answer_b: str):
+def run_direct_assessment(llm, model: str, question: str, answer: str):
     """
-    Runs the jury simulation using the given language model (llm) and model name.
+    Runs the direct assessment of an answer
+    """
+
+    result = llm.chat.completions.create(
+        model=model,
+        messages=direct_assessment_prompt(model, question, answer),
+    )
+
+    return result.choices[0].message.content
+
+def run_pairwise(llm, model: str, question: str, answer_a: str, answer_b: str):
+    """
+    Runs the pairwise comparison of 2 answer
     
     Args:
         llm (LanguageModel): The language model used for generating responses.
@@ -16,11 +28,18 @@ def run_jury(llm, model: str, question: str, answer_a: str, answer_b: str):
     """
     result = llm.chat.completions.create(
         model=model,
-        messages=juryPrompt(question, answer_a, answer_b)
+        messages=pairwise_prompt(model, question, answer_a, answer_b)
     )
     content = result.choices[0].message.content
+    print(content)
+
     print("--------")
     print("Model", model, ":", content)
+
+    if "prometheus2" in model:
+        result = content.split("[RESULT]")
+        return result[1].strip()
+
     if("[[A]]" in content and "[[B]]" in content):
         return "Tie"
     if ("[[A]]" in content):

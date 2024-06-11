@@ -3,7 +3,7 @@ load_dotenv("./.env")
 
 from openai import OpenAI
 import os
-from main import run_jury
+from main import run_direct_assessment, run_pairwise
 import time
 
 start = time.time()
@@ -37,14 +37,33 @@ answer_b = """故事的主人公名叫杰克，一个充满激情和梦想的年
 
 经过十多年的努力，杰克的公司逐渐成为行业领导者，他们的产品被广泛应用于全球，改变了无数人的生活和工作方式。杰克的故事告诉我们，只要有梦想，有毅力，有创新，即使起点低，也能通过不断努力实现创业成功。他的名字和公司成为了业界的典范，激励着更多年轻人勇敢追逐自己的梦想。
 """
+# qwen-0.5b
+answer_c = """故事的主角名叫李明，他在高中时期就对互联网和电子商务产生了浓厚的兴趣。因此，他决定在大学期间学习计算机科学和电子商务的专业知识。
+
+经过几年的学习，李明在学校里获得了计算机科学专业的学士学位，并且在电子商务专业中获得了硕士学位。
+
+毕业后，李明开始了自己的创业之路。他利用自己的计算机科学和电子商务专业知识，创建了一家成功的电子商务公司。
+
+最终，李明的电子商务公司取得了巨大的成功。它不仅为消费者提供了方便快捷的服务，而且还通过不断的创新和技术升级，成为了市场上的一颗璀璨明星。"""
 def main():
     llm = OpenAI(
         base_url=os.getenv("OPENAI_BASE_URL"),
         api_key=os.getenv("OPENAI_API_KEY")
     )
+
+    # Direct Assessment
+    model_to_run=models[0]
+    # ans_a = run_direct_assessment(llm, model_to_run, question, answer_a, rubric)
+    # print(ans_a)
+    # ans_b = run_direct_assessment(llm, model_to_run, question, answer_b, rubric)
+    # print(ans_b)
+    # ans_c = run_direct_assessment(llm, model_to_run, question, answer_c, rubric)
+    # print(ans_c)
+    print("~~~~~~~~~~~~~~~~~~~~~")
+
     results = []
     for model in models:
-        result = run_jury(llm, model, question, answer_a, answer_b)
+        result = run_pairwise(llm, model, question, answer_a, answer_b)
         print(f"Model {model} wins: {result}")
         results.append(result)
 
